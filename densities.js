@@ -9,12 +9,47 @@ var path = require("path");
 var exec = require('child_process').exec;
 var fs = require('fs');
 var im = require('imagemagick-native');
+var mime = require('mime');
 var mmm = require('mmmagic');
 var Magic = mmm.Magic;
 var sourceDir = __dirname;
 var outputDir = path.join(__dirname, "res");
 var config = require("./_config.js");
 var values = require("./_values.js");
+
+var mode = "job";
+
+var USAGE = [
+	"",
+	"**************************************",
+	"densities.js",
+	"**************************************",
+	"",
+	"USAGE:",
+	"1) Generate a job file to run:",
+	"",
+	"\t./job_builder.js <SOURE IMAGES DIRECTORY> <IMAGES OUTPUT DIRECTORY> <OUTPUT JOB FILE>",
+	"",
+	"2) Make any tweaks to job file prior to running the job.",
+	"",
+	"3) Then run the job file:",
+	"\t./densities.js <JOB FILE>",
+	"",
+	// "X) Feeling reckless? Want to use it on-the-fly? Do this:",
+	// "\t./densities.js <SOURCE DIRECTORY> <OUTPUT DIRECTORY>",
+	//"",
+	"All output files will go into a <output dir>/<density>/filename.jpg pattern.",
+	"E.g.:",
+	"/res/drawable-mdpi/filename.png",
+	"/res/drawable-hdpi/filename.png",
+	"/res/drawable-xhdpi/filename.png",
+	"/res/drawable-xxhdpi/filename.png",
+	"/res/drawable-xxxhdpi/filename.png",
+	""
+].join("\n");
+
+console.log(USAGE);
+return;
 
 // Setup source and output directories
 setupDirectories();
@@ -28,32 +63,37 @@ setupDirectories();
 // ============================================================================
 
 if (!(typeof config.files === "undefined") && config.files.length > 0) {
-	var magic = new Magic(mmm.MAGIC_MIME_TYPE);	
 	config.files.forEach(function(item) {		
-		var filepath = path.join(sourceDir, item.file);
-		magic.detectFile(path.join(sourceDir, item.file), function(err, result) {			
-			if (err) throw err;
-			console.log("Working on file: " + item.file);
-			processImage2(item, filepath);	
-			console.log("*******************")
-		});		
+		processImage2(item, path.join(sourceDir, item.file));	
 	});	
 } else {
 	var message = [
-		"\r\n",
-		"\r\n",
-		"************************************************************\r\n",
-		"No files to process!\r\n",
-		"Please check _config.js and make sure you have files listed!\r\n",
-		"************************************************************\r\n",
-		"\r\n",
-		"\r\n",
-	].join("");
+		"",
+		"",
+		"************************************************************",
+		"No files to process!",
+		"Please check _config.js and make sure you have files listed!",
+		"************************************************************",
+		"",
+		"",
+	].join("\n");
 	console.log(message)
 	return;
 }
 
-function processImage2(item, filepath) {
+
+
+
+
+
+// ============================================================================
+// Utility/Functions...
+// ============================================================================
+
+/**
+ * Processes an actual image file.
+ */
+function processImage(item, filepath) {
 	var image = fs.readFileSync(filepath);
 	var identify = im.identify({srcData: image, ignoreWarnings: 1});
 	var width = identify.width;
@@ -112,14 +152,6 @@ function processImage2(item, filepath) {
 	}
 }
 
-
-
-
-
-// ============================================================================
-// Utility/Functions...
-// ============================================================================
-
 /**
  * Checks for source/destination directories and creates the output directories if necessary.
  */
@@ -143,7 +175,7 @@ function setupDirectories() {
 		console.log("Creating output directory structure in: " + outputDir);
 		mkdirp.sync(outputDir);
 		for (var density in values.densities) {
-			fs.mkdirSync(path.join(outputDir, density), "0777");
+			fs.mkdirSync(path.join(outputDir, "drawable-"+density), "0777");
 		}		
 	}
 }
@@ -166,7 +198,7 @@ function outputDirectoriesExist(outputDir) {
 		return false;
 	}
 	for (var density in values.densities) {
-		if (!fs.existsSync(path.join(outputDir, density))) {
+		if (!fs.existsSync(path.join(outputDir, "drawable-"+density))) {
 			return false;
 		}
 	}
