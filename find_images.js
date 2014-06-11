@@ -104,7 +104,7 @@ function writeConfigFile(files) {
 	if (fs.existsSync(outFile)) {
 		var stats = fs.statSync(sourceDir);	
 		if (stats.isDirectory()) {
-			outFile += path.combine(outFile, "_temp_config.js");
+			outFile = path.join(outFile, "_temp_config.js");
 		}	
 	}
 
