@@ -2,6 +2,8 @@
 
 This command line utility will generate images for the various Android device screen densities. It is meant to do batch processing, but allows for per-file configuration options.  It works with any format supported by [ImageMagick](http://www.imagemagick.org/script/formats.php), and will generate for the following screen densities: mdpi, hdpi, xhdpi, xxhdpi and xxxhdpi.
 
+densities.js addresses a problem unique to Android development, due to the overwhleming variety of Android devices out there boasting different screen sizes and pixel densities.  For more information, check out the Android article (Supporting multiple screens)[http://developer.android.com/guide/practices/screens_support.html].
+
 # Quick Usage
 
     ./densities.js [source directory] [output directory]
@@ -10,19 +12,6 @@ This command line utility will generate images for the various Android device sc
 
     ./densities.js ./images ./res/
 
-
-# What densities.js does
-
-* Converts SVG images to PNG format. *Why?* Because of SVG’s spotty performance on the Android platform.  I plan to add a config value that overrides this conversion factor in the future... but if you’re determined to use SVG files, just drop them into your /res/drawables/ directory and pray that everything works.
-* Scales images according to aspect-ratio.
-* It runs via the command line (if you haven't gathered that by now).
-
-# What densities.js does *not* do
-
-* It does not trim/crop your images. You’re in charge of making sure that your image sizes are in order.
-* It isn't some magic tool that upscales low-resolution images well. It's best to start off with images that are big enough to fit xxhdpi, and let the script size-down for each version.
-* This is a synchronous app, and is therefore thread-blocking. I wouldn’t run this as a web app.
-* It will not work with 9-patch images. This has to do with preserving a 1px border around the images in order to draw the patch lines. I want to add this in the future, however. It will just take some work.
 
 # Requirements
 
@@ -40,6 +29,20 @@ In Mac OS X, you can simply use [Homebrew](http://mxcl.github.io/homebrew/) and 
 Run the following command in the same directory as this readme file:
 
     npm install
+
+# What densities.js does
+
+* Converts SVG images to PNG format. *Why?* Because of SVG’s spotty performance on the Android platform.  I plan to add a config value that overrides this conversion factor in the future... but if you’re determined to use SVG files, just drop them into your /res/drawables/ directory and pray that everything works.
+* Scales images according to aspect-ratio.
+* It runs via the command line (if you haven't gathered that by now).
+
+# What densities.js does *not* do
+
+* It does not trim/crop your images. You’re in charge of making sure that your image sizes are in order.
+* It isn't some magic tool that upscales low-resolution images well. It's best to start off with images that are big enough to fit xxhdpi, and let the script size-down for each version.
+* This is a synchronous app, and is therefore thread-blocking. I wouldn’t run this as a web app.
+* It will not work with 9-patch images. This has to do with preserving a 1px border around the images in order to draw the patch lines. I want to add this in the future, however. It will just take some work.
+
 
 # Config File (_config.js)
 
@@ -72,7 +75,7 @@ There is a file called *_config.example.js* that you can use as a template.  Her
 - `outputDir` — Output directory, can be overriden by command line switch. Default value is `./res`.
 - `files` — A list of all image files to process
     - `dimensions` — *SVG only* an array, as [width, height]. **This is the intended dimension at mdpi (1x size ratio)**. If unspecified, defaults to the actual image‘s size
-    - `sourceDensity` — The density of the source image. If specified, treats the size of the source image as a specific density. E.g. you may have a high-res 1920x1080 image, but you want the mdpi output size to be 640x360... you can put in a source density of "xxhdpi" and it will scale the images accordingly.
+    - `sourceDensity` — The density of the source image. This is a great way to avoid having specify `dimensions` and having everything automatically resize.  By default, it is assumed that the source density is `mdpi` (a scale of 1x), so by specifying a value like `xxhdpi` will assume the image is already at 3x scale, making the operation work flawlessly.
     - `quality`: Values range from 0 to 100. This includes PNGs.
 
 **Example files listing**:
