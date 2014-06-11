@@ -1,0 +1,20 @@
+{
+  "name": "densities",
+  "description": "Converts a list of image files into multiple-density varieties of those images for Android drawables.",
+  "version": "0.1.0",
+  "private": true,
+  "author": "Kevin Mahoney <kabojnk@gmail.com> (http://poitot.us)",
+  "license": "MIT",
+  "main": "densities.js",
+  "scripts": {
+    "lint": "jshint lib && jshint test"
+  },
+  "dependencies": {
+    "mkdirp": "~0.5.0",
+    "imagemagick-native": "~1.1.1",
+    "mmmagic": "*"
+  },
+  "devDependencies": {
+    "jshint": "~2.4.3"
+  }
+}
