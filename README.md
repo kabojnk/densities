@@ -6,29 +6,64 @@ densities.js addresses a problem unique to Android development, due to the overw
 
 # Quick Usage
 
-    ./densities.js [source directory] [output directory]
+    ./job_builder.js [source directory] [output directory] [output job file]
+    ./densities.js [job file]
 
 **Example:**
 
-    ./densities.js ./images ./res/
+    ./job_builder.js ./images ./res job1.json
+    ./densities.js job1.json
 
 
 # Requirements
 
-**1. [node.js](http://nodejs.org/)**
+- [node.js](http://nodejs.org/)
+- [ImageMagick](http://www.imagemagick.org/)
 
-This script requires node.js.
-
-**2. [ImageMagick](http://www.imagemagick.org/)**
-
-In Mac OS X, you can simply use [Homebrew](http://mxcl.github.io/homebrew/) and do:
-
-    brew install imagemagick
+In Mac OS X, you can simply use [Homebrew](http://mxcl.github.io/homebrew/) and do: `brew install imagemagick`
 
 # Installation
 Run the following command in the same directory as this readme file:
 
     npm install
+
+# Using the utility
+densities.js is usually a two-step process:
+
+1. Use `job_builder.js` to generate a job file (by scanning a directory for images and creates a manifest JSON file).  Ideally, the job file would be edited afterwards to make any necessary tweaks to filesize options.
+2. Use `densities.js` to run the job file and perform the batch operation.
+
+# Job file structure
+
+The job file **must** be in JSON format, and it must follow this structure:
+
+    "sourceDir" =  ".",
+    "outputDir" = "./res",
+    "files": [
+        {
+            "file": "image1.png",
+            "options": {
+                dimensions: [400, 100],
+                "quality": 90
+            }
+        },
+        {
+            "file": "image2.png",
+            "options": {
+                "dimensions": [100, 100],                
+            }
+        },
+        ...    
+    ]
+
+- `sourceDir` — Source directory, can be overriden by command line switch. Default value current directory.
+- `outputDir` — Output directory, can be overriden by command line switch. Default value is `./res`.
+- `files` — A list of all image files to process
+    - `dimensions` — *SVG only* an array, as [width, height]. **This is the intended dimension at mdpi (1x size ratio)**. If unspecified, defaults to the actual image‘s size
+    - `sourceDensity` — The density of the source image. This is a great way to avoid having specify `dimensions` and having everything automatically resize.  By default, it is assumed that the source density is `mdpi` (a scale of 1x), so by specifying a value like `xxhdpi` will assume the image is already at 3x scale, making the operation work flawlessly.
+    - `quality`: Values range from 0 to 100. This value does impact PNG files.
+
+`job_builder.js` will autogenerate a job file for you, but if you're creating one manually, I recommend using `jobfile.json.sample` as a boilerplate.
 
 # What densities.js does
 
@@ -42,65 +77,3 @@ Run the following command in the same directory as this readme file:
 * It isn't some magic tool that upscales low-resolution images well. It's best to start off with images that are big enough to fit xxhdpi, and let the script size-down for each version.
 * This is a synchronous app, and is therefore thread-blocking. I wouldn’t run this as a web app.
 * It will not work with 9-patch images. This has to do with preserving a 1px border around the images in order to draw the patch lines. I want to add this in the future, however. It will just take some work.
-
-
-# Config File (_config.js)
-
-There is a file called *_config.example.js* that you can use as a template.  Here is the general format:
-
-**Config file format**
-
-    exports.sourceDir =  ".",
-    exports.outputDir = "./res",
-
-    exports.files = [
-        {
-            file: "image1.png",
-            options: {
-                dimensions: [400, 100],
-                sourceDensity: "xhdpi",
-                quality: 90
-            }
-        },
-        {
-            file: "image2.png",
-            options: {
-                dimensions: [100, 100],                
-            }
-        },
-        ...    
-    ]
-
-- `sourceDir` — Source directory, can be overriden by command line switch. Default value current directory.
-- `outputDir` — Output directory, can be overriden by command line switch. Default value is `./res`.
-- `files` — A list of all image files to process
-    - `dimensions` — *SVG only* an array, as [width, height]. **This is the intended dimension at mdpi (1x size ratio)**. If unspecified, defaults to the actual image‘s size
-    - `sourceDensity` — The density of the source image. This is a great way to avoid having specify `dimensions` and having everything automatically resize.  By default, it is assumed that the source density is `mdpi` (a scale of 1x), so by specifying a value like `xxhdpi` will assume the image is already at 3x scale, making the operation work flawlessly.
-    - `quality`: Values range from 0 to 100. This includes PNGs.
-
-**Example files listing**:
-
-    exports.sourceDir = "./images";
-    exports.outputDir = "./res";
-    exports.defaultQuality = 90;
-
-    exports.files = [
-        { 
-            file: "ic_launcher.png",
-            options: {
-                dimensions: [48, 48]
-            }
-        },
-        { 
-            file: "bg_image.jpg", 
-            options: {
-                sourceDensity: "xxhdpi",
-            }
-        },
-        { 
-            file: "some_svg_file.svg",
-            options: {
-                dimensions: [400, 231]
-            }
-        }
-    ];

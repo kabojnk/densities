@@ -12,7 +12,8 @@
   "dependencies": {
     "mkdirp": "~0.5.0",
     "imagemagick-native": "~1.1.1",
-    "mmmagic": "*"
+    "mmmagic": "*",
+    "mime": "~1.2.11"
   },
   "devDependencies": {
     "jshint": "~2.4.3"

@@ -1,0 +1,21 @@
+{
+  "sourceDir": "../images",
+  "outputDir": "./res",
+  "files": [
+    {
+      "file": "background.jpg",
+      "options": {
+        "dimensions": [640, 360]
+      }
+    },
+    {
+      "file": "ic_launcher.svg",
+      "options": {
+        "dimensions": [48, 48]
+      }
+    },
+    {
+      "file": "ic_baloon.png"
+    }    
+  ]
+}
