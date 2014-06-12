@@ -215,6 +215,9 @@ function fileHasOptions(file) {
 	return false;
 }
 
+/**
+ * Checks if a particular option exists within a file's array of options.
+ */
 function optionExists(property, options) {
 	if (typeof options !== "undefined" && options.hasOwnProperty(property)) {
 		return true;
