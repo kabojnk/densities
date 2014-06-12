@@ -14,10 +14,10 @@ var mmm = require('mmmagic');
 var Magic = mmm.Magic;
 var sourceDir = __dirname;
 var outputDir = path.join(__dirname, "res");
+var jobFile = "job.json";
 var config = require("./_config.js");
 var values = require("./_values.js");
-
-var mode = "job";
+var mode = "job"; // Can be "job" or "hipshot"
 
 var USAGE = [
 	"",
@@ -36,7 +36,7 @@ var USAGE = [
 	"\t./densities.js <JOB FILE>",
 	"",
 	// "X) Feeling reckless? Want to use it on-the-fly? Do this:",
-	// "\t./densities.js <SOURCE DIRECTORY> <OUTPUT DIRECTORY>",
+	// "\t./densities.js --hipshot <SOURCE DIRECTORY> <OUTPUT DIRECTORY>",
 	//"",
 	"All output files will go into a <output dir>/<density>/filename.jpg pattern.",
 	"E.g.:",
@@ -48,47 +48,86 @@ var USAGE = [
 	""
 ].join("\n");
 
-console.log(USAGE);
-return;
-
-// Setup source and output directories
-setupDirectories();
-
-
-
-
-
-// ============================================================================
-// Running the application...
-// ============================================================================
-
-if (!(typeof config.files === "undefined") && config.files.length > 0) {
-	config.files.forEach(function(item) {		
-		processImage2(item, path.join(sourceDir, item.file));	
-	});	
-} else {
-	var message = [
-		"",
-		"",
-		"************************************************************",
-		"No files to process!",
-		"Please check _config.js and make sure you have files listed!",
-		"************************************************************",
-		"",
-		"",
-	].join("\n");
-	console.log(message)
+var job = init();
+if (!isJobValid(job)) {
 	return;
 }
-
-
-
+sourceDir = job.sourceDir;
+outputDir = job.outputDir;
+runJob(job);
+console.log("Finished.");
 
 
 
 // ============================================================================
 // Utility/Functions...
 // ============================================================================
+
+function init() {
+
+	// Make sure we have the correct arguments...
+	if (process.argv.length < 3) {
+		console.log(USAGE);
+		return;
+	}	
+	if (process.argv[2] == '--hipshot') {
+		if (process.argv.length < 5) {
+			console.log(USAGE);		
+			return;
+		}
+		mode = "hipshot";
+	}
+
+	// Job mode
+	if (mode === "job") {
+		var jobFile = path.normalize(process.argv[2]);
+		var job = null;
+		
+		if (!fs.existsSync(jobFile)) {
+			console.log("Yikes, job file not found! Maybe there was a typo?");
+			return;
+		}		
+		if (jobFile[0] == '/') {
+			job = require(path.normalize(jobFile));
+		} else {
+			job = require("." + path.sep + path.normalize(jobFile));
+		}	
+		return job;
+	}
+}
+
+function isJobValid(job) {
+	if (typeof job === "undefined") {
+		return false;
+	}
+	if (job.hasOwnProperty("sourceDir")) {		
+		if (!fs.existsSync(job.sourceDir)) {
+			console.log("Job error!", job.sourceDir, "does not exist!");
+			return false;
+		}
+		var stat = fs.statSync(job.sourceDir);
+		if (!stat.isDirectory(job.sourceDir)) {
+			console.log("Job error!", job.sourceDir, "is not a directory!");
+			return false;
+		}		
+	}
+	if (!setupDirectories(job.outputDir)) {
+		console.log("Unable to create output directory structure...");
+		return false;
+	}
+	return true;
+}
+
+function runJob(job) {
+	if (!(typeof job.files === "undefined") && job.files.length > 0) {
+		job.files.forEach(function(item) {		
+			processImage(item, path.join(sourceDir, item.file));	
+		});	
+	} else {
+		console.log("No files to process! Job file was empty.")
+		return;
+	}
+}
 
 /**
  * Processes an actual image file.
@@ -146,7 +185,7 @@ function processImage(item, filepath) {
 			ignoreWarnings: 1
 		};
 		var resizedImage = im.convert(convertData);
-		var outputFile = path.join(outputDir, density, outputFilename);
+		var outputFile = path.join(outputDir, "drawable-"+density, outputFilename);
 		console.log("Writing ", outputFile, "...");
 		fs.writeFileSync(outputFile, resizedImage, 'binary');		
 	}
@@ -155,29 +194,16 @@ function processImage(item, filepath) {
 /**
  * Checks for source/destination directories and creates the output directories if necessary.
  */
-function setupDirectories() {
-	if (process.argv.length > 2) {
-		var tmpSourcDir = process.argv[2];
-		if (fs.existsSync(tmpSourcDir)) {
-			sourceDir = tmpSourcDir;
-		} else {
-			if (!fs.existsSync(sourceDir)) {
-				sourceDir = __dirname;
-			}
-			console.log("ERROR! Specified source directory does not exist! Defaulting to " + __dirname);
-		}
-	}
-	if (process.argv.length > 3) {
-		var outputDir = process.argv[3];	
-	}	
+function setupDirectories(outputDir) {
 	if (!outputDirectoriesExist(outputDir)) {		
 		var mkdirp = require('mkdirp');
 		console.log("Creating output directory structure in: " + outputDir);
 		mkdirp.sync(outputDir);
 		for (var density in values.densities) {
 			fs.mkdirSync(path.join(outputDir, "drawable-"+density), "0777");
-		}		
+		}
 	}
+	return true;
 }
 
 /**
