@@ -15,7 +15,6 @@ var Magic = mmm.Magic;
 var sourceDir = __dirname;
 var outputDir = path.join(__dirname, "res");
 var jobFile = "job.json";
-var config = require("./_config.js");
 var values = require("./_values.js");
 var mode = "job"; // Can be "job" or "hipshot"
 
@@ -138,9 +137,10 @@ function processImage(item, filepath) {
 	var width = identify.width;
 	var height = identify.height;
 	var quality = 90;
+	var isNinePatch = false;	
 
 	// Work with any options being set...
-	if (fileHasOptions(item)) {
+	if (fileHasOptions(item)) {		
 		// If we have specified output dimensions
 		if (optionExists("dimensions", item.options)) {
 			width = item.options.dimensions[0];
@@ -158,6 +158,10 @@ function processImage(item, filepath) {
 		// By default the quality is 90, unless specified in the config file
 		if (optionExists("quality", item.options)) {
 			quality = item.options.quality;
+		}
+		// Is this a 9-patch image?
+		if (optionExists("ninePatch", item.options)) {
+			isNinePatch = item.options.isNinePatch === true;
 		}
 	}
 
@@ -249,13 +253,4 @@ function optionExists(property, options) {
 		return true;
 	}
 	return false;
-}
-
-/**
- * Returns whether or not the file should be "trimmed" prior to processing.
- */
-function optionsHaveTrim(options) {
-	if (typeof options !== "undefined") {
-		return options.hasOwnProperty("trim");
-	}
 }

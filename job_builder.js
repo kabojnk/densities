@@ -75,14 +75,18 @@ function searchForImages() {
 		// Ignore all dot-files
 		if (file[0] === ".") {
 			return;
-		}
+		}		
 		// Detect MIME type
 		var mimeType = mime.lookup(file);		
 		switch (mimeType) {
 			case 'image/jpeg':
 			case 'image/svg+xml':
 			case 'image/png':
-				filteredFiles.push({"file": file });
+				var entry = {"file": file }
+				if (file.match(/\.9\.png$/) !== null) {
+					entry.options = {"ninePatch": true};
+				}
+				filteredFiles.push(entry);
 				break;
 			default:
 				break;
