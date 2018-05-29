@@ -1,3 +1,5 @@
+# THIS UTILITY IS DEPRECATED.  I wrote this _years_ ago, back when Sketch was still a new thing, and Adobe batch export processes were not something that designers typically cared to do in small-scale shops.  Now there are tools like Zeplin that are way better. If your company isn't using Zeplin in its pipeline, you're doing things wrong.
+
 # densities.js
 
 This command line utility will generate images for the various Android device screen densities. It is meant to do batch processing, but allows for per-file configuration options.  It works with any format supported by [ImageMagick](http://www.imagemagick.org/script/formats.php), and will generate for the following screen densities: mdpi, hdpi, xhdpi, xxhdpi and xxxhdpi.
